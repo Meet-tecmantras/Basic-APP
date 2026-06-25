@@ -60,9 +60,24 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .linkBtn {
   margin-top: 12px;
   background: transparent;
   color: #93c5fd;
   padding: 0;
+}
+
+.success {
+  margin-top: 16px;
+  color: #4ade80;
+}
+
+.error {
+  margin-top: 16px;
+  color: #f87171;
 }
