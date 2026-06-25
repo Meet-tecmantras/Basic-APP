@@ -1,17 +1,50 @@
 import { useState } from 'react'
 
+const API_BASE_URL = 'http://localhost:8000'
+
 export default function App() {
   const [isLogin, setIsLogin] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', password: '' })
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const endpoint = isLogin ? '/api/v1/auth/login' : '/api/v1/auth/register'
-    console.log('Submit to', endpoint, form)
+    setLoading(true)
+    setMessage('')
+    setError('')
+
+    try {
+      const endpoint = isLogin ? '/api/v1/auth/login' : '/api/v1/auth/register'
+      const payload = isLogin
+        ? { email: form.email, password: form.password }
+        : { name: form.name, email: form.email, password: form.password }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Something went wrong')
+      }
+
+      setMessage(data.message || 'Success')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -47,8 +80,13 @@ export default function App() {
             onChange={handleChange}
             required
           />
-          <button type="submit">{isLogin ? 'Login' : 'Create account'}</button>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Please wait...' : isLogin ? 'Login' : 'Create account'}
+          </button>
         </form>
+
+        {message && <p className="success">{message}</p>}
+        {error && <p className="error">{error}</p>}
 
         <button className="linkBtn" onClick={() => setIsLogin(!isLogin)}>
           {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
